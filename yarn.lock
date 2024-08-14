@@ -1552,6 +1552,11 @@
 "@types/json-schema@^7.0.9":
   version "7.0.15"
 
+"@types/lodash@^4.17.7":
+  version "4.17.7"
+  resolved "https://registry.npmjs.org/@types/lodash/-/lodash-4.17.7.tgz"
+  integrity sha512-8wTvZawATi/lsmNu10/j2hk1KEP0IvjubqPE3cu1Xz7xfXXt5oCq3SNUz4fMIP4XGF9Ky+Ue2tBA3hcS7LSBlA==
+
 "@types/node-forge@^1.3.0":
   version "1.3.11"
   dependencies:
@@ -3675,6 +3680,8 @@ lodash.throttle@^4.1.1:
 
 lodash@^4.17.15, lodash@^4.17.21:
   version "4.17.21"
+  resolved "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
+  integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
 
 log-symbols@^4.1.0:
   version "4.1.0"
@@ -3693,6 +3700,11 @@ loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.4.0:
   version "1.4.0"
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
+
+lpf@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/lpf/-/lpf-1.0.0.tgz"
+  integrity sha512-ywrI4ZiPYw/AoWXz7ghxRwcJXKk3xldDPeo/SqT3Det6FNM3uTfPizHJwTk1ETYo0SaRYYR1URZAXglwn5Xklg==
 
 lru-cache@^5.1.1:
   version "5.1.1"
