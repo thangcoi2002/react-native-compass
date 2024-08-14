@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Text, View, StyleSheet} from 'react-native';
 import {
   magnetometer,
@@ -7,7 +7,7 @@ import {
   setUpdateIntervalForType,
 } from 'react-native-sensors';
 import Compass from './Compass';
-import {throttle} from 'lodash';
+import {debounce} from 'lodash';
 
 type Coordinates = {
   x: number;
@@ -21,31 +21,6 @@ const CompassScreen: React.FC = () => {
 
   const prevSensorData = useRef<Coordinates>({x: 0, y: 0, z: 0});
   const prevBalanceData = useRef<Coordinates>({x: 0, y: 0, z: 0});
-  const threshold = 2;
-
-  const hasSignificantChangeDegree = useMemo(() => {
-    return (data: Coordinates) => {
-      const {x, y, z} = data;
-      const {x: prevX, y: prevY, z: prevZ} = prevSensorData.current;
-      const dx = Math.abs(x - prevX);
-      const dy = Math.abs(y - prevY);
-      const dz = Math.abs(z - prevZ);
-      return dx > threshold || dy > threshold || dz > threshold;
-    };
-  }, []);
-
-  const hasSignificantChangeBalance = useMemo(() => {
-    return (data: Coordinates) => {
-      const {x, y, z} = data;
-      const {x: prevX, y: prevY, z: prevZ} = prevBalanceData.current;
-      const dx = Math.abs(x - prevX);
-      const dy = Math.abs(y - prevY);
-      const dz = Math.abs(z - prevZ);
-      return (
-        dx > threshold - 1.8 || dy > threshold - 1.8 || dz > threshold - 1.8
-      );
-    };
-  }, []);
 
   const angle = (coordinates: Coordinates) => {
     let answer = 0;
@@ -82,42 +57,29 @@ const CompassScreen: React.FC = () => {
     return valueDegree - 90 >= 0 ? valueDegree - 90 : valueDegree + 271;
   };
 
-  const updateDegree = useRef(
-    throttle((sensor: Coordinates) => {
-      if (hasSignificantChangeDegree(sensor)) {
+  useEffect(() => {
+    setUpdateIntervalForType(SensorTypes.magnetometer, 1000);
+    setUpdateIntervalForType(SensorTypes.accelerometer, 1000);
+    const magnetometerSubscription = magnetometer.subscribe(sensor => {
+      debounce(() => {
         setDegree(angle(sensor));
         prevSensorData.current = sensor;
-      }
-    }, 100),
-  );
-
-  const updateBalance = useRef(
-    throttle((accel: Coordinates) => {
-      if (hasSignificantChangeBalance(accel)) {
-        setBalance(accel);
-        prevBalanceData.current = accel;
-      }
-    }, 100),
-  );
-
-  useEffect(() => {
-    setUpdateIntervalForType(SensorTypes.magnetometer, 16);
-    setUpdateIntervalForType(SensorTypes.accelerometer, 16);
-
-    const subscriptionMagnetometer = magnetometer.subscribe(sensor => {
-      updateDegree.current(sensor);
+      }, 1000)();
     });
 
-    const subscriptionAccelerometer = accelerometer.subscribe(accel => {
-      updateBalance.current(accel);
+    const accelerometerSubscription = accelerometer.subscribe(accel => {
+      debounce(() => {
+        setBalance(accel);
+        prevBalanceData.current = accel;
+      }, 1000)();
     });
 
     return () => {
-      subscriptionMagnetometer.unsubscribe();
-      subscriptionAccelerometer.unsubscribe();
+      magnetometerSubscription.unsubscribe();
+      accelerometerSubscription.unsubscribe();
     };
-  }, [hasSignificantChangeDegree, hasSignificantChangeBalance]);
-
+  }, []);
+  console.log(123);
   return (
     <View style={styles.container}>
       <Compass degree={degree} balance={balance} />
