@@ -16,6 +16,7 @@
     "react": "18.2.0",
     "react-native": "0.74.5",
     "react-native-easy-grid": "^0.2.2",
+    "react-native-reanimated": "^3.15.0",
     "react-native-sensor": "^1.0.3",
     "react-native-sensors": "^7.3.6"
   },

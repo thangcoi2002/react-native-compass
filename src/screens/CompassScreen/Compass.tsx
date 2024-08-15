@@ -2,7 +2,9 @@ import React, {useCallback, useEffect, useRef} from 'react';
 import {
   Animated,
   Dimensions,
+  Easing,
   Image,
+  LayoutAnimation,
   StyleSheet,
   Text,
   View,
@@ -35,11 +37,13 @@ const Compass: React.FC<CompassProps> = ({degree, balance}) => {
       Animated.timing(animatedTranslateX, {
         toValue: balance.x * 10,
         duration: 100,
+        easing: Easing.linear,
         useNativeDriver: true,
       }),
       Animated.timing(animatedTranslateY, {
         toValue: -balance.y * 10,
         duration: 100,
+        easing: Easing.linear,
         useNativeDriver: true,
       }),
     ]).start();
@@ -58,9 +62,11 @@ const Compass: React.FC<CompassProps> = ({degree, balance}) => {
       }
     }
 
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     Animated.timing(animatedValue, {
       toValue: newDegree,
       duration: 300,
+      easing: Easing.linear,
       useNativeDriver: true,
     }).start();
   }, [degree, animatedValue]);
@@ -114,7 +120,7 @@ const Compass: React.FC<CompassProps> = ({degree, balance}) => {
           const y = radius * Math.sin(angle) - circleRadius;
 
           return (
-            <View
+            <Animated.View
               key={number}
               style={[
                 styles.numberCircle,
@@ -128,16 +134,16 @@ const Compass: React.FC<CompassProps> = ({degree, balance}) => {
                 },
               ]}>
               <Text style={[styles.number]}>{number}</Text>
-            </View>
+            </Animated.View>
           );
         })}
         {labels.map((label, index) => {
           const angle = (index / labels.length) * 2 * Math.PI;
-          const x = (radius - 60) * Math.cos(angle) - circleRadius;
-          const y = (radius - 60) * Math.sin(angle) - circleRadius;
+          const x = (radius - 80) * Math.cos(angle) - circleRadius;
+          const y = (radius - 80) * Math.sin(angle) - circleRadius;
 
           return (
-            <View
+            <Animated.View
               key={label}
               style={[
                 styles.labelCircle,
@@ -151,7 +157,7 @@ const Compass: React.FC<CompassProps> = ({degree, balance}) => {
                 },
               ]}>
               <Text style={[styles.label]}>{label}</Text>
-            </View>
+            </Animated.View>
           );
         })}
       </Animated.View>
@@ -217,7 +223,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   label: {
-    fontSize: 20,
+    fontSize: 40,
+    fontWeight: '400',
     color: 'white',
   },
 });
