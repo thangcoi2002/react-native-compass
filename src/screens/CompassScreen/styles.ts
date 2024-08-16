@@ -1,7 +1,13 @@
-import {StyleSheet} from 'react-native';
+import {Dimensions, StyleSheet} from 'react-native';
+const {width} = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
-  txt: {
-    color: '#fff',
+  image: {
+    width: 350,
+    height: 350,
+    resizeMode: 'contain',
+  },
+  txtDefault: {
+    // color: '#fff',
   },
 });
