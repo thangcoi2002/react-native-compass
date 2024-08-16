@@ -1,56 +1,56 @@
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {
   Animated,
   Dimensions,
-  Easing,
   Image,
   LayoutAnimation,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
+import {styles} from './styles';
 
 const {width} = Dimensions.get('window');
 
 interface CompassProps {
   degree: number;
-  balance: {
-    x: number;
-    y: number;
-    z: number;
-  };
+  // balance: {
+  //   x: number;
+  //   y: number;
+  //   z: number;
+  // };
 }
 
-const Compass: React.FC<CompassProps> = ({degree, balance}) => {
+const Compass: React.FC<CompassProps> = ({degree}) => {
   const numbers = Array.from({length: 12}, (_, i) => i * 30);
   const labels = ['B', 'Đ', 'N', 'T'];
   const radius = (width - 40) / 2;
   const circleRadius = 25;
 
-  const animatedValue = useRef(new Animated.Value(0)).current;
+  const animatedCircle = useRef(new Animated.Value(0)).current;
   const animatedTranslateX = useRef(new Animated.Value(0)).current;
   const animatedTranslateY = useRef(new Animated.Value(0)).current;
-  const prevDegree = useRef(0);
+  const animatedLabel = useRef(new Animated.Value(0)).current;
 
-  const onHandleAnimatedBalance = useCallback(() => {
-    Animated.parallel([
-      Animated.timing(animatedTranslateX, {
-        toValue: balance.x * 10,
-        duration: 100,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-      Animated.timing(animatedTranslateY, {
-        toValue: -balance.y * 10,
-        duration: 100,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [balance.x, balance.y, animatedTranslateX, animatedTranslateY]);
+  const prevCircle = useRef(0);
+  const prevCircleLabel = useRef(0);
+
+  // const onHandleAnimatedBalance = useCallback(() => {
+  //   Animated.parallel([
+  //     Animated.timing(animatedTranslateX, {
+  //       toValue: balance.x * 10,
+  //       duration: 100,
+  //       useNativeDriver: true,
+  //     }),
+  //     Animated.timing(animatedTranslateY, {
+  //       toValue: -balance.y * 10,
+  //       duration: 100,
+  //       useNativeDriver: true,
+  //     }),
+  //   ]).start();
+  // }, [balance, animatedTranslateX, animatedTranslateY]);
 
   useEffect(() => {
-    const currentDegree = prevDegree.current;
+    const currentDegree = prevCircle.current;
     let newDegree = 360 - degree;
     let diff = newDegree - currentDegree;
 
@@ -63,46 +63,66 @@ const Compass: React.FC<CompassProps> = ({degree, balance}) => {
     }
 
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    Animated.timing(animatedValue, {
+    Animated.spring(animatedCircle, {
       toValue: newDegree,
-      duration: 300,
-      easing: Easing.linear,
+      friction: 5,
+      tension: 10,
       useNativeDriver: true,
     }).start();
-  }, [degree, animatedValue]);
+  }, [animatedCircle, degree]);
 
   useEffect(() => {
-    onHandleAnimatedBalance();
-  }, [balance, onHandleAnimatedBalance]);
+    const currentLabelCircle = prevCircleLabel.current;
+    let newLabelCircle = degree;
+    let diff = newLabelCircle - currentLabelCircle;
+    if (Math.abs(diff) > 180) {
+      if (diff > 0) {
+        newLabelCircle = currentLabelCircle - (360 - diff);
+      } else {
+        newLabelCircle = currentLabelCircle + (360 + diff);
+      }
+    }
+
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    Animated.spring(animatedLabel, {
+      toValue: newLabelCircle,
+      friction: 4,
+      tension: 7,
+      useNativeDriver: true,
+    }).start();
+  }, [degree, animatedLabel]);
+
+  // useEffect(() => {
+  //   onHandleAnimatedBalance();
+  // }, [balance, onHandleAnimatedBalance]);
 
   return (
     <View>
-      <Image
-        source={require('../../../assets/img/plusIcon.png')}
-        style={[styles.plusIcon]}
-      />
-      <Animated.View
-        style={[
-          styles.accelerometer,
-          {
+      <View style={[styles.accelerometer]}>
+        <Animated.View
+          style={{
             transform: [
               {translateX: animatedTranslateX},
               {translateY: animatedTranslateY},
             ],
-          },
-        ]}>
+          }}>
+          <Image
+            source={require('../../../assets/img/balance.png')}
+            style={[styles.accelerometerCircle, {}]}
+          />
+        </Animated.View>
         <Image
-          source={require('../../../assets/img/balance.png')}
-          style={styles.accelerometerCircle}
+          source={require('../../../assets/img/plusIcon.png')}
+          style={[styles.plusIcon]}
         />
-      </Animated.View>
+      </View>
       <Animated.View
         style={[
           styles.circleContainer,
           {
             transform: [
               {
-                rotate: animatedValue.interpolate({
+                rotate: animatedCircle.interpolate({
                   inputRange: [0, 360],
                   outputRange: ['0deg', '360deg'],
                 }),
@@ -130,7 +150,14 @@ const Compass: React.FC<CompassProps> = ({degree, balance}) => {
                   width: circleRadius * 2,
                   height: circleRadius * 2,
                   borderRadius: circleRadius,
-                  transform: [{rotate: `${(degree * Math.PI) / 180}rad`}],
+                  transform: [
+                    {
+                      rotate: animatedLabel.interpolate({
+                        inputRange: [0, 360],
+                        outputRange: ['0deg', '360deg'],
+                      }),
+                    },
+                  ],
                 },
               ]}>
               <Text style={[styles.number]}>{number}</Text>
@@ -148,12 +175,19 @@ const Compass: React.FC<CompassProps> = ({degree, balance}) => {
               style={[
                 styles.labelCircle,
                 {
-                  left: radius + x - circleRadius,
+                  left: radius + x - circleRadius + 5,
                   top: radius + y - circleRadius + 5,
                   width: circleRadius * 2,
                   height: circleRadius * 2,
                   borderRadius: circleRadius,
-                  transform: [{rotate: `${(degree * Math.PI) / 180}rad`}],
+                  transform: [
+                    {
+                      rotate: animatedLabel.interpolate({
+                        inputRange: [0, 360],
+                        outputRange: ['0deg', '360deg'],
+                      }),
+                    },
+                  ],
                 },
               ]}>
               <Text style={[styles.label]}>{label}</Text>
@@ -164,69 +198,5 @@ const Compass: React.FC<CompassProps> = ({degree, balance}) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  circleContainer: {
-    position: 'relative',
-    width: width - 80,
-    height: width - 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'contain',
-  },
-  accelerometer: {
-    height: '100%',
-    width: '100%',
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-    top: 5,
-    left: -45,
-  },
-  plusIcon: {
-    width: 100,
-    height: 100,
-    resizeMode: 'contain',
-    position: 'absolute',
-    top: '37%',
-    left: '28%',
-    zIndex: 10,
-  },
-  accelerometerCircle: {
-    width: 60,
-    height: 60,
-    backgroundColor: '#333',
-    borderRadius: 30,
-  },
-  numberCircle: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  number: {
-    color: 'white',
-    fontSize: 20,
-  },
-  labelCircle: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  label: {
-    fontSize: 40,
-    fontWeight: '400',
-    color: 'white',
-  },
-});
 
 export default Compass;
