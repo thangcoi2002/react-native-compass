@@ -1,5 +1,4 @@
-import {Dimensions, StyleSheet} from 'react-native';
-const {width} = Dimensions.get('window');
+import {StyleSheet} from 'react-native';
 
 export const styles = StyleSheet.create({
   image: {
@@ -9,5 +8,26 @@ export const styles = StyleSheet.create({
   },
   txtDefault: {
     // color: '#fff',
+  },
+  numberCircle: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  labelCircle: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  txtNumber: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '300',
+  },
+  txtLabel: {
+    color: '#fff',
+    fontSize: 30,
+    fontWeight: '400',
   },
 });

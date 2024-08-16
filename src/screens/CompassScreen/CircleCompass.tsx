@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react';
-import {Animated, View} from 'react-native';
+import {Animated, Dimensions, Image, Text, View} from 'react-native';
 import {styles} from './styles';
 import {magnetometer} from 'react-native-sensors';
 import {map} from 'rxjs';
@@ -15,8 +15,14 @@ const onCalculationAngle = (newCoordinates: {x: number; y: number}) => {
   return Math.round(angle);
 };
 
+const {width} = Dimensions.get('screen');
+
 const CircleCompass: React.FC = () => {
-  const animatedCircle = useRef(new Animated.Value(0)).current;
+  const numbers = Array.from({length: 12}, (_, i) => i * 30);
+  const labels = ['B', 'Đ', 'N', 'T'];
+  const radius = (width - 40) / 2;
+  const circleRadius = 25;
+  const animatedCircle = useRef(new Animated.Value(0));
   const animatedAngle = useRef(0);
 
   const currentDegree = useRef({x: 0, y: 0});
@@ -53,37 +59,99 @@ const CircleCompass: React.FC = () => {
       }
 
       animatedAngle.current += diff;
-      Animated.spring(animatedCircle, {
+      Animated.spring(animatedCircle.current, {
         toValue: animatedAngle.current,
-        friction: 0,
-        tension: 30,
+        friction: 4,
+        tension: 15,
         useNativeDriver: true,
       }).start();
 
       lastDegree.current = currentDegree.current;
-    }, 110);
+    }, 500);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
     <View style={{flex: 1, justifyContent: 'center'}}>
-      <Animated.Image
+      <Animated.View
         style={[
-          styles.image,
           {
             transform: [
               {
-                rotate: animatedCircle.interpolate({
+                rotate: animatedCircle.current.interpolate({
                   inputRange: [0, 360],
                   outputRange: ['0deg', '-360deg'],
                 }),
               },
             ],
           },
-        ]}
-        source={require('../../../assets/img/compass_bg.png')}
-      />
+        ]}>
+        <Image
+          style={styles.image}
+          source={require('../../../assets/img/compass_bg.png')}
+        />
+        {numbers.map((number, index) => {
+          const angle = (index / numbers.length) * 2 * Math.PI;
+          const x = radius * Math.cos(angle) - circleRadius;
+          const y = radius * Math.sin(angle) - circleRadius;
+
+          return (
+            <Animated.View
+              key={number}
+              style={[
+                styles.numberCircle,
+                {
+                  left: radius + x - 20,
+                  top: radius + y - 20,
+                  width: circleRadius * 2,
+                  height: circleRadius * 2,
+                  borderRadius: circleRadius,
+                  transform: [
+                    {
+                      rotate: animatedCircle.current.interpolate({
+                        inputRange: [0, 360],
+                        outputRange: ['0deg', '360deg'],
+                      }),
+                    },
+                  ],
+                },
+              ]}>
+              <Text style={styles.txtNumber}>{number}</Text>
+            </Animated.View>
+          );
+        })}
+        {labels.map((label, index) => {
+          const angle = (index / labels.length) * 2 * Math.PI;
+          const x = (radius - 80) * Math.cos(angle) - circleRadius;
+          const y = (radius - 80) * Math.sin(angle) - circleRadius;
+
+          return (
+            <Animated.View
+              key={label}
+              style={[
+                styles.labelCircle,
+                {
+                  left: radius + x - circleRadius + 5,
+                  top: radius + y - circleRadius + 5,
+                  width: circleRadius * 2,
+                  height: circleRadius * 2,
+                  borderRadius: circleRadius,
+                  transform: [
+                    {
+                      rotate: animatedCircle.current.interpolate({
+                        inputRange: [0, 360],
+                        outputRange: ['0deg', '360deg'],
+                      }),
+                    },
+                  ],
+                },
+              ]}>
+              <Text style={styles.txtLabel}>{label}</Text>
+            </Animated.View>
+          );
+        })}
+      </Animated.View>
     </View>
   );
 };
