@@ -95,7 +95,7 @@ const Compass: React.FC<CompassProps> = ({degree}) => {
   // useEffect(() => {
   //   onHandleAnimatedBalance();
   // }, [balance, onHandleAnimatedBalance]);
-
+  console.log(123);
   return (
     <View>
       <View style={[styles.accelerometer]}>
